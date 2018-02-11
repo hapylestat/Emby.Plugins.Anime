@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Model.Logging;
-using MediaBrowser.Plugins.Anime.Providers.AniDB.Identity;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -84,8 +83,6 @@ namespace MediaBrowser.Plugins.Anime.Providers
             {
                 if (simple_compare(a, b))
                     return true;
-                if (Fast_xml_search(a, b))
-                    return true;
 
                 return false;
             }
@@ -141,130 +138,6 @@ namespace MediaBrowser.Plugins.Anime.Providers
                 x++;
             }
             return "";
-        }
-
-        /// <summary>
-        ///Return true if a and b match return false if not
-        ///It loads the titles.xml on exceptions
-        /// </summary>
-        private static bool Fast_xml_search(string a, string b, bool return_AniDBid = false, bool retry = false)
-        {
-            //Get AID aid=\"([s\S].*)\">
-            try
-            {
-                List<string> pre_aid = new List<string>();
-                string xml = File.ReadAllText(get_anidb_xml_file());
-                int x = 0;
-                string s1 = "-";
-                string s2 = "-";
-                while (!string.IsNullOrEmpty(s1) && !string.IsNullOrEmpty(s2))
-                {
-                    s1 = one_line_regex(new Regex("<anime aid=" + "\"" + @"(\d+)" + "\"" + @">(?>[^<>]+|<(?!\/anime>)[^<>]*>)*?" + Regex.Escape(Half_string(a, 4))), xml, 1, x);
-                    if (s1 != "")
-                    {
-                        pre_aid.Add(s1);
-                    }
-                    s2 = one_line_regex(new Regex("<anime aid=" + "\"" + @"(\d+)" + "\"" + @">(?>[^<>]+|<(?!\/anime>)[^<>]*>)*?" + Regex.Escape(Half_string(b, 4))), xml, 1, x);
-                    if (s1 != "")
-                    {
-                        if (s1 != s2)
-                        {
-                            pre_aid.Add(s2);
-                        }
-                    }
-                    x++;
-                }
-                foreach (string _aid in pre_aid)
-                {
-                    XElement doc = XElement.Parse("<?xml version=\"1.0\" encoding=\"UTF - 8\"?>" + "<animetitles>" + one_line_regex(new Regex("<anime aid=\"" + _aid + "\">" + @"(?s)(.*?)<\/anime>"), xml, 0) + "</animetitles>");
-                    var a_ = from page in doc.Elements("anime")
-                             where _aid == page.Attribute("aid").Value
-                             select page;
-                    if (simple_compare(a_.Elements("title"), b) && simple_compare(a_.Elements("title"), a))
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            }
-            catch (Exception)
-            {
-                if (retry)
-                {
-                    return false;
-                }
-                else
-                {
-                    Task.Run(() => AniDbTitleDownloader.Load_static(new System.Threading.CancellationToken()));
-                    return Fast_xml_search(a, b, false, true);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Return the AniDB ID if a and b match
-        /// </summary>
-        public static string Fast_xml_search(string a, string b, bool return_AniDBid, int x_ = 0)
-        {
-            //Get AID aid=\"([s\S].*)\">
-            try
-            {
-                List<string> pre_aid = new List<string>();
-                string xml = File.ReadAllText(get_anidb_xml_file());
-                int x = 0;
-                string s1 = "-";
-                string s2 = "-";
-                while (!string.IsNullOrEmpty(s1) && !string.IsNullOrEmpty(s2))
-                {
-                    s1 = one_line_regex(new Regex("<anime aid=" + "\"" + @"(\d+)" + "\"" + @">(?>[^<>]+|<(?!\/anime>)[^<>]*>)*?" + Regex.Escape(Half_string(a, 4))), xml, 1, x);
-                    if (s1 != "")
-                    {
-                        pre_aid.Add(s1);
-                    }
-                    s2 = one_line_regex(new Regex("<anime aid=" + "\"" + @"(\d+)" + "\"" + @">(?>[^<>]+|<(?!\/anime>)[^<>]*>)*?" + Regex.Escape(Half_string(b, 4))), xml, 1, x);
-                    if (s1 != "")
-                    {
-                        if (s1 != s2)
-                        {
-                            pre_aid.Add(s2);
-                        }
-                    }
-                    x++;
-                }
-                foreach (string _aid in pre_aid)
-                {
-                    XElement doc = XElement.Parse("<?xml version=\"1.0\" encoding=\"UTF - 8\"?>" + "<animetitles>" + one_line_regex(new Regex("<anime aid=\"" + _aid + "\">" + @"(?s)(.*?)<\/anime>"), xml, 0) + "</animetitles>");
-                    var a_ = from page in doc.Elements("anime")
-                             where _aid == page.Attribute("aid").Value
-                             select page;
-                    if (simple_compare(a_.Elements("title"), b) && simple_compare(a_.Elements("title"), a))
-                    {
-                        return _aid;
-                    }
-                }
-                return "";
-            }
-            catch (Exception)
-            {
-                if (x_ == 1)
-                {
-                    return "";
-                }
-                else
-                {
-                    Task.Run(() => AniDbTitleDownloader.Load_static(new System.Threading.CancellationToken()));
-                    return Fast_xml_search(a, b, true, 1);
-                }
-            }
-        }
-
-        /// <summary>
-        /// get file Path from anidb xml file
-        /// </summary>
-        /// <returns></returns>
-        private static string get_anidb_xml_file()
-        {
-            return AniDbTitleDownloader.TitlesFilePath_;
         }
 
         /// <summary>

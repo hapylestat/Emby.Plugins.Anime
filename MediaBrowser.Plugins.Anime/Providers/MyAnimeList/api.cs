@@ -22,8 +22,8 @@ namespace MediaBrowser.Plugins.Anime.Providers.MyAnimeList
         //Use API too search
         public static string SearchLink = "https://myanimelist.net/api/anime/search.xml?q={0}";
 
-        //No API funktion exist too get anime
-        public static string anime_link = "https://myanimelist.net/anime/info/";
+        //No API function exist too get anime
+        public static string anime_link = "https://myanimelist.net/anime/";
 
         /// <summary>
         /// WebContent API call to get a anime with id

@@ -4,7 +4,6 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Plugins.Anime.Configuration;
-using MediaBrowser.Plugins.Anime.Providers.AniDB.Identity;
 using System;
 using System.Collections.Generic;
 
@@ -16,8 +15,6 @@ namespace MediaBrowser.Plugins.Anime
         public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer, ILogger logger) : base(applicationPaths, xmlSerializer)
         {
             Instance = this;
-
-            AniDbTitleMatcher.DefaultInstance = new AniDbTitleMatcher(logger, new AniDbTitleDownloader(logger, applicationPaths));
         }
 
         public override string Name

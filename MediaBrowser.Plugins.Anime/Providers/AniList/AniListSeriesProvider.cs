@@ -8,7 +8,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Plugins.Anime.Configuration;
-using MediaBrowser.Plugins.Anime.Providers.AniDB.Identity;
+using MediaBrowser.Plugins.Anime.ParsingTools;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -57,7 +57,7 @@ namespace MediaBrowser.Plugins.Anime.Providers.AniList
                         results.Add(a.id.ToString(), ToSearchResult(a));
                 }
 
-                var cleaned = AniDbTitleMatcher.GetComparableName(searchInfo.Name);
+                var cleaned = Converters.GetComparableName(searchInfo.Name);
                 if (String.Compare(cleaned, searchInfo.Name, StringComparison.OrdinalIgnoreCase) != 0)
                 {
                     search = await _api.Search(cleaned);
@@ -115,7 +115,7 @@ namespace MediaBrowser.Plugins.Anime.Providers.AniList
                 }
                 if (string.IsNullOrEmpty(aid))
                 {
-                    var cleaned = AniDbTitleMatcher.GetComparableName(Equals_check.clear_name(info.Name));
+                    var cleaned = Converters.GetComparableName(Equals_check.clear_name(info.Name));
                     if (String.Compare(cleaned, info.Name, StringComparison.OrdinalIgnoreCase) != 0)
                     {
                         search = await _api.Search(cleaned);
