@@ -23,10 +23,6 @@ namespace AnimeLists
         public AnimelistSupplementalinfo[] Supplementalinfo { get; set; }
 
         /// <remarks />
-        [XmlAttribute("anidbid")]
-        public string AnidbId { get; set; }
-
-        /// <remarks />
         [XmlAttribute("anisearch")]
         public string AniSearchId { get; set; }
 

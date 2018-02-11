@@ -12,6 +12,8 @@ TestResults
 *.suo
 *.user
 *.sln.docstates
+.vs/
+.idea/
 
 # Build results
 [Dd]ebug/
@@ -108,5 +110,4 @@ Backup*/
 UpgradeLog*.XML
 
 # MonoDevelop metafiles
-MediaBrowser.Plugins.Anime.userprefs
-
+MediaBrowser.Plugins.Anime.userprefs 

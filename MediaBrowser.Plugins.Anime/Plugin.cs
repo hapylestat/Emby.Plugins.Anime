@@ -9,18 +9,14 @@ using System.Collections.Generic;
 
 namespace MediaBrowser.Plugins.Anime
 {
-    public class Plugin
-        : BasePlugin<PluginConfiguration>, IHasWebPages
-    {
+    public class Plugin: BasePlugin<PluginConfiguration>, IHasWebPages
+    {    
         public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer, ILogger logger) : base(applicationPaths, xmlSerializer)
         {
             Instance = this;
         }
 
-        public override string Name
-        {
-            get { return "Anime"; }
-        }
+        public override string Name => "Anime";
 
         public static Plugin Instance { get; private set; }
 
@@ -36,11 +32,8 @@ namespace MediaBrowser.Plugins.Anime
             };
         }
 
-        private Guid _id = new Guid("1d0dddf7-1877-4473-8d7b-03f7dac1e559");
+        private readonly Guid _id = new Guid("1d0dddf7-1877-4473-8d7b-03f7dac1e559");
 
-        public override Guid Id
-        {
-            get { return _id; }
-        }
+        public override Guid Id => _id;
     }
 }
