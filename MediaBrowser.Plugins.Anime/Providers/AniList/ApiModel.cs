@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using MediaBrowser.Plugins.Anime.Utils;
+
 
 namespace MediaBrowser.Plugins.Anime.Providers.AniList
 {
@@ -10,7 +12,17 @@ namespace MediaBrowser.Plugins.Anime.Providers.AniList
     {
         public class Title
         {
-            public string romaji { get; set; }
+            private string _romaji;
+
+            public string romaji {
+                get {
+                    return StringUtils.filterUnicodeArt(_romaji);
+                }
+                set {
+                    _romaji = value;
+                }
+            }
+
             public string english { get; set; }
             public string native { get; set; }
         }
