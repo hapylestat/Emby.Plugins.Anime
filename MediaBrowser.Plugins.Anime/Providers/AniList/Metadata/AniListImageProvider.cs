@@ -29,6 +29,8 @@ namespace MediaBrowser.Plugins.Anime.Providers.AniList.Metadata
 
         protected override string ProviderName => ProviderNames.AniList;
 
+        protected override IEnumerable<ImageType> supportedImages => new[] { ImageType.Primary, ImageType.Banner };
+
         public override Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             return _httpClient.GetResponse(new HttpRequestOptions
@@ -46,12 +48,20 @@ namespace MediaBrowser.Plugins.Anime.Providers.AniList.Metadata
 
             if (!string.IsNullOrEmpty(seriesId))
             {
-                var primary = _api.Get_ImageUrl(await curl.PostJson<Models.RootObject>(api.AniList_anime_link.Replace("{0}", seriesId), null, _jsonSerializer));
+                var rootObject = await curl.PostJson<Models.RootObject>(api.AniList_anime_link.Replace("{0}", seriesId), null, _jsonSerializer);
+                var primary = _api.Get_ImageUrl(rootObject);
+                var banner = _api.Get_BannerUrl(rootObject);
                 list.Add(new RemoteImageInfo
                 {
                     ProviderName = Name,
                     Type = ImageType.Primary,
                     Url = primary
+                });
+                list.Add(new RemoteImageInfo
+                {
+                    ProviderName = Name,
+                    Type = ImageType.Banner,
+                    Url = banner
                 });
             }
             return list;

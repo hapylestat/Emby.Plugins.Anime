@@ -263,6 +263,10 @@ query ($query: String, $type: MediaType) {
             return WebContent.data.Media.coverImage.large;
         }
 
+        public string Get_BannerUrl(Models.RootObject WebContent)
+        {
+            return WebContent.data.Media.bannerImage;
+        }
         /// <summary>
         /// API call too get the rating
         /// </summary>

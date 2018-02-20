@@ -91,7 +91,7 @@ namespace MediaBrowser.Plugins.Anime.Providers.AniList.Models
         public StartDate startDate { get; set; }
         public EndDate endDate { get; set; }
         public CoverImage coverImage { get; set; }
-        public object bannerImage { get; set; }
+        public string bannerImage { get; set; }
         public string format { get; set; }
         public string type { get; set; }
         public string status { get; set; }

@@ -2,8 +2,8 @@
   "profiles": {
     "MediaBrowser.Plugins.Anime": {
       "commandName": "Executable",
-      "executablePath": "E:\\git\\emby\\embyserver-win-x64-3.2.70.0\\system\\EmbyServer.exe",
-      "workingDirectory": "E:\\git\\emby\\embyserver-win-x64-3.2.70.0"
+      "executablePath": "$(SolutionDir)..\\embyserver\\system\\EmbyServer.exe",
+      "workingDirectory": "$(SolutionDir)..\\embyserver"
     }
   }
 }

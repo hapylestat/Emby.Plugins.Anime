@@ -30,6 +30,6 @@
     <PackageReference Include="mediabrowser.server.core" Version="3.3.20" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="cmd /C del /F &quot;$(SolutionDir)..\embyserver-win-x64-3.2.70.0\programdata\plugins\$(TargetFileName)&quot;&#xD;&#xA;cmd /C copy /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)..\embyserver-win-x64-3.2.70.0\programdata\plugins\&quot;" />
+    <Exec Command="cmd /C del /F &quot;$(SolutionDir)..\embyserver\programdata\plugins\$(TargetFileName)&quot;&#xD;&#xA;cmd /C copy /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)..\embyserver\programdata\plugins\&quot;" />
   </Target>
 </Project>

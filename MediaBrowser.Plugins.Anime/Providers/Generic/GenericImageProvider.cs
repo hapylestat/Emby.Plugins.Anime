@@ -21,8 +21,8 @@ namespace MediaBrowser.Plugins.Anime.Providers.Generic
         protected readonly IApplicationPaths _paths;
         protected readonly ILogger _log;
         protected abstract String ProviderName { get; }
-        protected readonly IEnumerable<ImageType> supportedImages = new[] { ImageType.Primary };
-        public bool Supports(BaseItem item) => item is Season || item is Series;
+        protected virtual IEnumerable<ImageType> supportedImages => new[] { ImageType.Primary };
+        public virtual bool Supports(BaseItem item) => item is Season || item is Series;
 
         public GenericImageProvider(IApplicationPaths appPaths, IHttpClient httpClient, ILogManager logManager, IJsonSerializer jsonSerializer)
         {
