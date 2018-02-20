@@ -13,6 +13,13 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\</OutputPath>
   </PropertyGroup>
+  
+  <!-- Reverences definition-->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net46'">
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+  
+  <!-- Resources -->
   <ItemGroup>
     <None Remove="Configuration\configPage.html" />
   </ItemGroup>

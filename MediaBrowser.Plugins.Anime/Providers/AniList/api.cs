@@ -8,7 +8,8 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Plugins.Anime.Providers.AniList.MediaBrowser.Plugins.Anime.Providers.AniList;
+using MediaBrowser.Plugins.Anime.Providers.AniList;
+using MediaBrowser.Plugins.Anime.Utils;
 using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Plugins.Anime.Providers.AniList
@@ -22,6 +23,7 @@ namespace MediaBrowser.Plugins.Anime.Providers.AniList
     public class api
     {
         private static IJsonSerializer _jsonSerializer;
+        private static Curl curl = Curl.instance;
         private readonly List<string> anime_search_names = new List<string>();
         private readonly List<string> anime_search_ids = new List<string>();
 
@@ -159,8 +161,8 @@ query ($query: String, $type: MediaType) {
         /// <returns></returns>
         public async Task<RemoteSearchResult> GetAnime(string id)
         {
-            RootObject WebContent = await WebRequestAPI(AniList_anime_link.Replace("{0}",id));
-            
+            Models.RootObject WebContent = await curl.PostJson<Models.RootObject>(AniList_anime_link.Replace("{0}", id), null, _jsonSerializer);
+
             var result = new RemoteSearchResult
             {
                 Name = ""
@@ -181,7 +183,7 @@ query ($query: String, $type: MediaType) {
         /// <param name="preference"></param>
         /// <param name="language"></param>
         /// <returns></returns>
-        private string SelectName(RootObject WebContent, TitlePreferenceType preference, string language)
+        private string SelectName(Models.RootObject WebContent, TitlePreferenceType preference, string language)
         {
             switch (preference)
             {
@@ -200,7 +202,7 @@ query ($query: String, $type: MediaType) {
         /// <param name="lang"></param>
         /// <param name="WebContent"></param>
         /// <returns></returns>
-        public string Get_title(string lang, RootObject WebContent)
+        public string Get_title(string lang, Models.RootObject WebContent)
         {
             switch (lang)
             {
@@ -218,8 +220,8 @@ query ($query: String, $type: MediaType) {
         public async Task<List<PersonInfo>> getPersonInfo(int id)
         {
             List<PersonInfo> lpi = new List<PersonInfo>();
-            RootObject WebContent = await WebRequestAPI(AniList_anime_char_link.Replace("{0}", id.ToString()));
-            foreach (Edge edge in WebContent.data.Media.characters.edges)
+            Models.RootObject WebContent = await curl.PostJson<Models.RootObject>(AniList_anime_char_link.Replace("{0}", id.ToString()), null, _jsonSerializer);
+            foreach (Models.Edge edge in WebContent.data.Media.characters.edges)
             {
                 PersonInfo pi = new PersonInfo();
                 pi.Name = edge.node.name.first+" "+ edge.node.name.last;
@@ -245,7 +247,7 @@ query ($query: String, $type: MediaType) {
         /// </summary>
         /// <param name="WebContent"></param>
         /// <returns></returns>
-        public List<string> Get_Genre(RootObject WebContent)
+        public List<string> Get_Genre(Models.RootObject WebContent)
         {
 
             return WebContent.data.Media.genres;
@@ -256,7 +258,7 @@ query ($query: String, $type: MediaType) {
         /// </summary>
         /// <param name="WebContent"></param>
         /// <returns></returns>
-        public string Get_ImageUrl(RootObject WebContent)
+        public string Get_ImageUrl(Models.RootObject WebContent)
         {
             return WebContent.data.Media.coverImage.large;
         }
@@ -266,7 +268,7 @@ query ($query: String, $type: MediaType) {
         /// </summary>
         /// <param name="WebContent"></param>
         /// <returns></returns>
-        public string Get_Rating(RootObject WebContent)
+        public string Get_Rating(Models.RootObject WebContent)
         {
             return (WebContent.data.Media.averageScore / 10).ToString();
         }
@@ -276,7 +278,7 @@ query ($query: String, $type: MediaType) {
         /// </summary>
         /// <param name="WebContent"></param>
         /// <returns></returns>
-        public string Get_Overview(RootObject WebContent)
+        public string Get_Overview(Models.RootObject WebContent)
         {
             return WebContent.data.Media.description;
         }
@@ -292,8 +294,8 @@ query ($query: String, $type: MediaType) {
             anime_search_names.Clear();
             anime_search_ids.Clear();
 
-            RootObject WebContent = await WebRequestAPI(SearchLink.Replace("{0}", title));
-            foreach (Medium media in WebContent.data.Page.media) {
+            Models.RootObject WebContent = await curl.PostJson<Models.RootObject>(SearchLink.Replace("{0}", title), null, _jsonSerializer);
+            foreach (Models.Medium media in WebContent.data.Page.media) {
                 //get id
 
                 try
@@ -331,8 +333,9 @@ query ($query: String, $type: MediaType) {
         public async Task<List<string>> Search_GetSeries_list(string title, CancellationToken cancellationToken)
         {
             List<string> result = new List<string>();
-            RootObject WebContent = await WebRequestAPI(SearchLink.Replace("{0}", title));
-            foreach (Medium media in WebContent.data.Page.media)
+            Models.RootObject WebContent = await curl.PostJson<Models.RootObject>(SearchLink.Replace("{0}", title), null, _jsonSerializer);
+
+            foreach (Models.Medium media in WebContent.data.Page.media)
             {
                 //get id
 
@@ -390,23 +393,5 @@ query ($query: String, $type: MediaType) {
             return "";
         }
 
-        /// <summary>
-        /// GET website content from the link
-        /// </summary>
-        public async Task<RootObject> WebRequestAPI(string link)
-        {
-                string _strContent = "";
-                using (WebClient client = new WebClient())
-                {
-                    var values = new System.Collections.Specialized.NameValueCollection();
-
-                    var response = await Task.Run(() => client.UploadValues(new Uri(link),values));
-                    _strContent = System.Text.Encoding.Default.GetString(response);
-                }
-
-                RootObject data = _jsonSerializer.DeserializeFromString<RootObject>(_strContent);
-            
-                return data;
-        }
     }
 }

@@ -140,6 +140,7 @@ namespace MediaBrowser.Plugins.Anime.Providers
             return "";
         }
 
+         
         /// <summary>
         /// Compare 2 Strings, and it just works
         /// SeriesA S2 == SeriesA Second Season | True;
