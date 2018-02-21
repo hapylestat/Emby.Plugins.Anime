@@ -5,13 +5,10 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Plugins.Anime.Providers.AniList;
 using MediaBrowser.Plugins.Anime.Providers.Generic;
 using MediaBrowser.Plugins.Anime.Utils;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,27 +17,27 @@ namespace MediaBrowser.Plugins.Anime.Providers.AniList.Metadata
     class AniListSeriesProvider : GenericSeriesProvider
     {
         private readonly ApiClient _api;
-        private readonly Curl curl = Curl.instance;
+        private readonly Curl curl;
         private readonly IJsonSerializer _jsonSerializer;
         public static readonly SemaphoreSlim ResourcePool = new SemaphoreSlim(1, 1);
+        private readonly string myCachePath;
 
 
         public AniListSeriesProvider(IApplicationPaths appPaths, IHttpClient httpClient, ILogManager logManager, IJsonSerializer jsonSerializer) : base(appPaths, httpClient, logManager, jsonSerializer)
         {
-            _api = new ApiClient(jsonSerializer);
+            _api = new ApiClient(jsonSerializer, httpClient);
             _jsonSerializer = jsonSerializer;
+            curl = new Curl(httpClient);
+
+            myCachePath = System.IO.Path.Combine(_paths.CachePath, Name);
+            System.IO.Directory.CreateDirectory(myCachePath);            
         }
 
         protected override string ProviderName =>ProviderNames.AniList;
 
         public override Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {
-            return _httpClient.GetResponse(new HttpRequestOptions
-            {
-                CancellationToken = cancellationToken,
-                Url = url,
-                ResourcePool = ResourcePool
-            });
+            return curl.Get(url, null, cancellationToken, ResourcePool);
         }
 
         public async override Task<MetadataResult<Series>> GetMetadata(SeriesInfo info, CancellationToken cancellationToken)
@@ -61,6 +58,7 @@ namespace MediaBrowser.Plugins.Anime.Providers.AniList.Metadata
                 result.Item = new Series();
                 result.HasMetadata = true;
 
+                result.Item.Name = (WebContent.data.Media.title.english == null || WebContent.data.Media.title.english == "")? WebContent.data.Media.title.romaji : WebContent.data.Media.title.english;
                 result.People = await _api.getPersonInfo(WebContent.data.Media.id);
                 result.Item.ProviderIds.Add(ProviderNames.AniList, aid);
                 result.Item.Overview = WebContent.data.Media.description;
@@ -72,6 +70,7 @@ namespace MediaBrowser.Plugins.Anime.Providers.AniList.Metadata
                 catch (Exception) { }
                 foreach (var genre in _api.Get_Genre(WebContent))
                     result.Item.AddGenre(genre);
+
                 //GenreHelper.CleanupGenres(result.Item);
                 //StoreImageUrl(aid, WebContent.data.Media.coverImage.large, "image");
             }

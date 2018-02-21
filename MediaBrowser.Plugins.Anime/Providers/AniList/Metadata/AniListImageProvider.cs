@@ -19,12 +19,13 @@ namespace MediaBrowser.Plugins.Anime.Providers.AniList.Metadata
     {
         private readonly ApiClient _api;
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly Curl curl = Curl.instance;
+        private readonly Curl curl;
 
         public AniListImageProvider(IApplicationPaths appPaths, IHttpClient httpClient, ILogManager logManager, IJsonSerializer jsonSerializer) : base(appPaths, httpClient, logManager, jsonSerializer)
         {
-            _api = new ApiClient(jsonSerializer);
+            _api = new ApiClient(jsonSerializer, httpClient);
             _jsonSerializer = jsonSerializer;
+            curl = new Curl(httpClient);
         }
 
         protected override string ProviderName => ProviderNames.AniList;

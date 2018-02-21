@@ -1,0 +1,71 @@
+﻿{
+  "Anime": {
+    "ProviderId": 0,
+    "Description": "",
+    "Characters": [
+      {
+        "Role": "",
+        "Name": {
+          "First": "",
+          "Last": "",
+          "Full": "First Last",
+          "Native": ""
+        },
+        "VoiceActors": [
+          {
+            "Name": {
+              "First": "",
+              "Last": "",
+              "Full": "First Last",
+              "Native": ""
+            },
+            "Image": {
+              "Medium": "",
+              "Large": ""
+            },
+            "Language": "",
+            "ProviderId": 0
+          }
+        ]
+      }
+    ],
+    "AverageScore": 70,
+    "IsAdult": false,
+    "StartDate": {
+      "year": 1980,
+      "month": 10,
+      "day": 1
+    },
+    "EndDate": {
+      "year": 1980,
+      "month": 10,
+      "day": 1
+    },
+    "Title": {
+      "english": "Sword Art Online",
+      "romaji": "Sword Art Online",
+      "native": "ソードアート・オンライン"
+    },
+    "CoverImage": {
+      "Medium": "",
+      "Large": ""
+    },
+    "BannerImage": "",
+    "Episodes": 10,
+    "Season": "summer",
+    "Genres": [
+      "Action",
+      "Adventure",
+      "Fantasy",
+      "Romance"
+    ],
+    "Synonyms": [
+      "S.A.O",
+      "SAO"
+    ]
+
+
+
+
+  }
+}

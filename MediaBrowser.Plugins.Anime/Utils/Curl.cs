@@ -1,9 +1,7 @@
-﻿using MediaBrowser.Model.Serialization;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Model.Serialization;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -34,61 +32,50 @@ namespace MediaBrowser.Plugins.Anime.Utils
         private const String _app_tag = "MediaBrowser.Anime";
         private static volatile Curl _instance;
         private static object syncRoot = new Object();
-        private readonly HttpClient httpClient;
+        private readonly IHttpClient httpClient;
+ 
 
-
-        private Curl() {
-            httpClient = new HttpClient();
-
-            httpClient.DefaultRequestHeaders.Add("User-Agent", _app_tag + "/Beta");
-            //httpClient.DefaultRequestHeaders.ConnectionClose = true;
+        public Curl(IHttpClient _httpClient) {
+            httpClient = _httpClient;
         }
 
 
-        public static Curl instance
-        {
-            get {
-                if (_instance == null)
-                {
-                    lock (syncRoot)
-                    {
-                        if (_instance == null) _instance = new Curl();
-                    }
-                }
-
-                return _instance;
-            }
-        }
         #region "Base functions"
 
-        public async Task<HttpContent> Get(string uri, CurlAuth curlAuth = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpResponseInfo> Get(string uri, CurlAuth curlAuth = null, CancellationToken cancellationToken = default(CancellationToken), SemaphoreSlim _resourcePool = null)
         {
-            var r = new HttpRequestMessage(HttpMethod.Get, uri);
-            if (curlAuth != null)
-            {
-                r.Headers.Add("Authorization", "Basic " + curlAuth.Token);
-            }
+            
+            var r = new HttpRequestOptions();
 
-            var httpResponse = await httpClient.SendAsync(r, cancellationToken);
-            return httpResponse.Content;           
+            if (curlAuth != null) {
+                r.RequestHeaders.Add("Authorization", "Basic " + curlAuth.Token);
+            }
+            if (_resourcePool != null) r.ResourcePool = _resourcePool;
+
+
+            r.RequestHeaders.Add("Accept-Charset", "utf-8");
+            r.CancellationToken = cancellationToken;
+            r.Url = uri;
+
+            return await httpClient.SendAsync(r, HttpMethod.Get.ToString().ToUpper());
         }
 
-        public async Task<HttpContent> Post(string uri, string content, CurlAuth curlAuth = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpResponseInfo> Post(string uri, string content, CurlAuth curlAuth = null, CancellationToken cancellationToken = default(CancellationToken), SemaphoreSlim _resourcePool = null)
         {
-            var r = new HttpRequestMessage(HttpMethod.Post, uri);
-            if (curlAuth != null)
-            {
-                r.Headers.Add("Authorization", "Basic " + curlAuth.Token);
-            }
+            var r = new HttpRequestOptions();
 
-            if (content != null)
-            {
-                r.Content = new StringContent(content);
+            if (curlAuth != null) {
+                r.RequestHeaders.Add("Authorization", "Basic " + curlAuth.Token);
             }
+            if (content != null) r.RequestContent = content;
+            if (_resourcePool != null) r.ResourcePool = _resourcePool;
+            r.RequestHeaders.Add("Accept-Charset", "utf-8");
+            r.CancellationToken = cancellationToken;
+            r.Url = uri;
 
-            var httpResponse = await httpClient.SendAsync(r, cancellationToken);
-            return httpResponse.Content;
-        }
+
+            return await httpClient.SendAsync(r, HttpMethod.Post.ToString().ToUpper());
+         }
 
         #endregion
 
@@ -97,25 +84,37 @@ namespace MediaBrowser.Plugins.Anime.Utils
         public async Task<string> GetString(string uri, CurlAuth curlAuth = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             var httpContent = await Get(uri, curlAuth, cancellationToken);
-            return await httpContent.ReadAsStringAsync();
+            string result;
+            using (StreamReader streamReader = new StreamReader(httpContent.Content))
+            {
+                result = await streamReader.ReadToEndAsync();
+            }
+
+            return result;
         }
 
         public async Task<Stream> GetStream(string uri, CurlAuth curlAuth = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             var httpContent = await Get(uri, curlAuth, cancellationToken);
-            return await httpContent.ReadAsStreamAsync();
+            return httpContent.Content;
         }
 
         public async Task<string> PostString(string uri, string content, CurlAuth curlAuth = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             var httpContent = await Post(uri, content, curlAuth, cancellationToken);
-            return await httpContent.ReadAsStringAsync();
+            string result;
+            using (StreamReader streamReader = new StreamReader(httpContent.Content))
+            {
+                result = await streamReader.ReadToEndAsync();
+            }
+
+            return result;
         }
 
         public async Task<Stream> PostStream(string uri, string content, CurlAuth curlAuth = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             var httpContent = await Post(uri, content, curlAuth, cancellationToken);
-            return await httpContent.ReadAsStreamAsync();
+            return httpContent.Content;
         }
 
         public async Task<T> PostJson<T>(string uri, string content, IJsonSerializer jsonSerializer, CurlAuth curlAuth = null, CancellationToken cancellationToken = default(CancellationToken))

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Plugins.Anime.Providers.AniList;
 using MediaBrowser.Plugins.Anime.Utils;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Common.Net;
 
 namespace MediaBrowser.Plugins.Anime.Providers.AniList
 {
@@ -18,7 +19,7 @@ namespace MediaBrowser.Plugins.Anime.Providers.AniList
     public class ApiClient
     {
         private static IJsonSerializer _jsonSerializer;
-        private static Curl curl = Curl.instance;
+        private static Curl curl;
         private readonly List<string> anime_search_names = new List<string>();
         private readonly List<string> anime_search_ids = new List<string>();
 
@@ -145,9 +146,10 @@ query ($query: String, $type: MediaType) {
   }
 }&variables={ ""id"":""{0}"",""type"":""ANIME""}";
 
-        public ApiClient(IJsonSerializer jsonSerializer)
+        public ApiClient(IJsonSerializer jsonSerializer, IHttpClient httpClient)
         {
             _jsonSerializer = jsonSerializer;
+            curl = new Curl(httpClient);
         }
 
 
