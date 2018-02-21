@@ -17,13 +17,13 @@ namespace MediaBrowser.Plugins.Anime.Providers.AniList.Metadata
 {
     class AniListImageProvider : GenericImageProvider
     {
-        private readonly api _api;
+        private readonly ApiClient _api;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly Curl curl = Curl.instance;
 
         public AniListImageProvider(IApplicationPaths appPaths, IHttpClient httpClient, ILogManager logManager, IJsonSerializer jsonSerializer) : base(appPaths, httpClient, logManager, jsonSerializer)
         {
-            _api = new api(jsonSerializer);
+            _api = new ApiClient(jsonSerializer);
             _jsonSerializer = jsonSerializer;
         }
 
@@ -48,21 +48,26 @@ namespace MediaBrowser.Plugins.Anime.Providers.AniList.Metadata
 
             if (!string.IsNullOrEmpty(seriesId))
             {
-                var rootObject = await curl.PostJson<Models.RootObject>(api.AniList_anime_link.Replace("{0}", seriesId), null, _jsonSerializer);
+                var rootObject = await curl.PostJson<Models.RootObject>(ApiClient.AniList_anime_link.Replace("{0}", seriesId), null, _jsonSerializer);
                 var primary = _api.Get_ImageUrl(rootObject);
                 var banner = _api.Get_BannerUrl(rootObject);
-                list.Add(new RemoteImageInfo
+                if (primary != null)
                 {
-                    ProviderName = Name,
-                    Type = ImageType.Primary,
-                    Url = primary
-                });
-                list.Add(new RemoteImageInfo
-                {
-                    ProviderName = Name,
-                    Type = ImageType.Banner,
-                    Url = banner
-                });
+                    list.Add(new RemoteImageInfo
+                    {
+                        ProviderName = Name,
+                        Type = ImageType.Primary,
+                        Url = primary
+                    });
+                }
+                if (banner != null) {
+                    list.Add(new RemoteImageInfo
+                    {
+                        ProviderName = Name,
+                        Type = ImageType.Banner,
+                        Url = banner
+                    });
+                }
             }
             return list;
         }

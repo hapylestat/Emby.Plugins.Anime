@@ -14,13 +14,8 @@ using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Plugins.Anime.Providers.AniList
 {
-    /// <summary>
-    /// Based on the new API from AniList
-    /// 🛈 This code works with the API Interface (v2) from AniList
-    /// 🛈 https://anilist.gitbooks.io/anilist-apiv2-docs
-    /// 🛈 THIS IS AN UNOFFICAL API INTERFACE FOR EMBY
-    /// </summary>
-    public class api
+
+    public class ApiClient
     {
         private static IJsonSerializer _jsonSerializer;
         private static Curl curl = Curl.instance;
@@ -150,15 +145,12 @@ query ($query: String, $type: MediaType) {
   }
 }&variables={ ""id"":""{0}"",""type"":""ANIME""}";
 
-        public api(IJsonSerializer jsonSerializer)
+        public ApiClient(IJsonSerializer jsonSerializer)
         {
             _jsonSerializer = jsonSerializer;
         }
-        /// <summary>
-        /// API call to get the anime with the id
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
+
+
         public async Task<RemoteSearchResult> GetAnime(string id)
         {
             Models.RootObject WebContent = await curl.PostJson<Models.RootObject>(AniList_anime_link.Replace("{0}", id), null, _jsonSerializer);
@@ -176,13 +168,7 @@ query ($query: String, $type: MediaType) {
             return result;
         }
 
-        /// <summary>
-        /// API call to select the lang
-        /// </summary>
-        /// <param name="WebContent"></param>
-        /// <param name="preference"></param>
-        /// <param name="language"></param>
-        /// <returns></returns>
+
         private string SelectName(Models.RootObject WebContent, TitlePreferenceType preference, string language)
         {
             switch (preference)
@@ -196,12 +182,6 @@ query ($query: String, $type: MediaType) {
             return  WebContent.data.Media.title.romaji;
         }
 
-        /// <summary>
-        /// API call to get the title with the right lang
-        /// </summary>
-        /// <param name="lang"></param>
-        /// <param name="WebContent"></param>
-        /// <returns></returns>
         public string Get_title(string lang, Models.RootObject WebContent)
         {
             switch (lang)
@@ -217,47 +197,41 @@ query ($query: String, $type: MediaType) {
                    return WebContent.data.Media.title.romaji;
             }
         }
-        public async Task<List<PersonInfo>> getPersonInfo(int id)
-        {
+        public async Task<List<PersonInfo>> getPersonInfo(int id) {
             List<PersonInfo> lpi = new List<PersonInfo>();
             Models.RootObject WebContent = await curl.PostJson<Models.RootObject>(AniList_anime_char_link.Replace("{0}", id.ToString()), null, _jsonSerializer);
-            foreach (Models.Edge edge in WebContent.data.Media.characters.edges)
-            {
-                PersonInfo pi = new PersonInfo();
-                pi.Name = edge.node.name.first+" "+ edge.node.name.last;
-                pi.ItemId = ToGuid(edge.node.id);
-                pi.ImageUrl = edge.node.image.large;
-                pi.Role = edge.role;
+            foreach (Models.Edge edge in WebContent.data.Media.characters.edges) {
+                foreach (Models.VoiceActor actor in edge.voiceActors) {
+                    PersonInfo pi = new PersonInfo {
+                        Name = actor.name.FullName,
+                        ItemId = ToGuid(actor.id),
+                        ImageUrl = actor.image.large,
+                        Role = edge.node.name.FullName,
+                        ProviderIds = new Dictionary<string, string> {
+                            { ProviderNames.AniList, actor.id.ToString() }
+                        }
+                    };
+                    lpi.Add(pi);
+                }
             }
             return lpi;
         }
-        /// <summary>
-        /// Convert int to Guid
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
+
+
         public static Guid ToGuid(int value)
         {
             byte[] bytes = new byte[16];
             BitConverter.GetBytes(value).CopyTo(bytes, 0);
             return new Guid(bytes);
         }
-        /// <summary>
-        /// API call to get the genre of the anime
-        /// </summary>
-        /// <param name="WebContent"></param>
-        /// <returns></returns>
+
         public List<string> Get_Genre(Models.RootObject WebContent)
         {
 
             return WebContent.data.Media.genres;
         }
 
-        /// <summary>
-        /// API call to get the img url
-        /// </summary>
-        /// <param name="WebContent"></param>
-        /// <returns></returns>
+
         public string Get_ImageUrl(Models.RootObject WebContent)
         {
             return WebContent.data.Media.coverImage.large;
@@ -267,32 +241,18 @@ query ($query: String, $type: MediaType) {
         {
             return WebContent.data.Media.bannerImage;
         }
-        /// <summary>
-        /// API call too get the rating
-        /// </summary>
-        /// <param name="WebContent"></param>
-        /// <returns></returns>
+
         public string Get_Rating(Models.RootObject WebContent)
         {
             return (WebContent.data.Media.averageScore / 10).ToString();
         }
 
-        /// <summary>
-        /// API call to get the description
-        /// </summary>
-        /// <param name="WebContent"></param>
-        /// <returns></returns>
+
         public string Get_Overview(Models.RootObject WebContent)
         {
             return WebContent.data.Media.description;
         }
 
-        /// <summary>
-        /// API call to search a title and return the right one back
-        /// </summary>
-        /// <param name="title"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
         private async Task<string> Search_GetSeries(string title, CancellationToken cancellationToken)
         {
             anime_search_names.Clear();
@@ -328,12 +288,6 @@ query ($query: String, $type: MediaType) {
             return null;
         }
 
-        /// <summary>
-        /// API call to search a title and return a list back
-        /// </summary>
-        /// <param name="title"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
         public async Task<List<string>> Search_GetSeries_list(string title, CancellationToken cancellationToken)
         {
             List<string> result = new List<string>();
@@ -361,9 +315,6 @@ query ($query: String, $type: MediaType) {
             return result;
         }
 
-        /// <summary>
-        /// SEARCH Title
-        /// </summary>
         public async Task<string> FindSeries(string title, CancellationToken cancellationToken)
         {
             string aid = await Search_GetSeries(title, cancellationToken);
@@ -379,9 +330,6 @@ query ($query: String, $type: MediaType) {
             return null;
         }
 
-        /// <summary>
-        /// Simple regex
-        /// </summary>
         public async Task<string> One_line_regex(Regex regex, string match, int group = 1, int match_int = 0)
         {
             int x = 0;

@@ -115,12 +115,6 @@ namespace MediaBrowser.Plugins.Anime.Providers.AniList.Models
         public int lastPage { get; set; }
     }
 
-    public class Name
-    {
-        public string first { get; set; }
-        public string last { get; set; }
-    }
-
     public class Image
     {
         public string medium { get; set; }
@@ -134,11 +128,18 @@ namespace MediaBrowser.Plugins.Anime.Providers.AniList.Models
         public Image image { get; set; }
     }
 
-    public class Name2
+    public class Name
     {
         public string first { get; set; }
         public string last { get; set; }
         public string native { get; set; }
+        public string FullName
+        {
+            get
+            {
+                return first + " " + last;
+            }
+        }
     }
 
     public class Image2
@@ -150,7 +151,7 @@ namespace MediaBrowser.Plugins.Anime.Providers.AniList.Models
     public class VoiceActor
     {
         public int id { get; set; }
-        public Name2 name { get; set; }
+        public Name name { get; set; }
         public Image2 image { get; set; }
         public string language { get; set; }
     }

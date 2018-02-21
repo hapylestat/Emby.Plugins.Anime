@@ -19,7 +19,7 @@ namespace MediaBrowser.Plugins.Anime.Providers.AniList.Metadata
 {
     class AniListSeriesProvider : GenericSeriesProvider
     {
-        private readonly api _api;
+        private readonly ApiClient _api;
         private readonly Curl curl = Curl.instance;
         private readonly IJsonSerializer _jsonSerializer;
         public static readonly SemaphoreSlim ResourcePool = new SemaphoreSlim(1, 1);
@@ -27,7 +27,7 @@ namespace MediaBrowser.Plugins.Anime.Providers.AniList.Metadata
 
         public AniListSeriesProvider(IApplicationPaths appPaths, IHttpClient httpClient, ILogManager logManager, IJsonSerializer jsonSerializer) : base(appPaths, httpClient, logManager, jsonSerializer)
         {
-            _api = new api(jsonSerializer);
+            _api = new ApiClient(jsonSerializer);
             _jsonSerializer = jsonSerializer;
         }
 
@@ -41,15 +41,6 @@ namespace MediaBrowser.Plugins.Anime.Providers.AniList.Metadata
                 Url = url,
                 ResourcePool = ResourcePool
             });
-        }
-
-        private void StoreImageUrl(string series, string url, string type)
-        {
-            var path = Path.Combine(_paths.CachePath, "anilist", type, series + ".txt");
-            var directory = Path.GetDirectoryName(path);
-            Directory.CreateDirectory(directory);
-
-            File.WriteAllText(path, url);
         }
 
         public async override Task<MetadataResult<Series>> GetMetadata(SeriesInfo info, CancellationToken cancellationToken)
@@ -66,7 +57,7 @@ namespace MediaBrowser.Plugins.Anime.Providers.AniList.Metadata
 
             if (!string.IsNullOrEmpty(aid))
             {
-                Models.RootObject WebContent = await curl.PostJson<Models.RootObject>(api.AniList_anime_link.Replace("{0}", aid), null, _jsonSerializer);
+                Models.RootObject WebContent = await curl.PostJson<Models.RootObject>(ApiClient.AniList_anime_link.Replace("{0}", aid), null, _jsonSerializer);
                 result.Item = new Series();
                 result.HasMetadata = true;
 
