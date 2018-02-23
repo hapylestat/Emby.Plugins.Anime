@@ -30,8 +30,6 @@ namespace MediaBrowser.Plugins.Anime.Utils
     public sealed class Curl
     {
         private const String _app_tag = "MediaBrowser.Anime";
-        private static volatile Curl _instance;
-        private static object syncRoot = new Object();
         private readonly IHttpClient httpClient;
  
 

@@ -6,14 +6,15 @@ using MediaBrowser.Model.Serialization;
 using MediaBrowser.Plugins.Anime.Configuration;
 using System;
 using System.Collections.Generic;
+using MediaBrowser.Plugins.Anime.Providers.Generic.Models;
 
 namespace MediaBrowser.Plugins.Anime
 {
     public class Plugin: BasePlugin<PluginConfiguration>, IHasWebPages
     {    
-        public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer, ILogger logger) : base(applicationPaths, xmlSerializer)
+        public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer, IJsonSerializer jsonSerializer, ILogger logger) : base(applicationPaths, xmlSerializer)
         {
-            Instance = this;
+            Instance = this;           
         }
 
         public override string Name => "Anime";

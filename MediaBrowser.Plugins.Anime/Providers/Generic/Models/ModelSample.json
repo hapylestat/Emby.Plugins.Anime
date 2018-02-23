@@ -1,7 +1,9 @@
 ﻿{
   "Anime": {
     "ProviderId": 0,
-    "Description": "",
+    "Description": {
+      "english": ""
+    },
     "Characters": [
       {
         "Role": "",
@@ -62,6 +64,16 @@
     "Synonyms": [
       "S.A.O",
       "SAO"
+    ],
+    "Relations": [
+      {
+        "ProviderId": 0,
+        "Relation": "SEQUEL"
+      },
+      {
+        "ProviderId": 1,
+        "Relation": "PREQUEL"
+      }
     ]
 
 
